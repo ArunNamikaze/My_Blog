@@ -40,16 +40,23 @@
 
           {% endif %}
 <!--           Comments Area -->
-          <div class="col-lg-8 col-md-10 mx-auto comment">
+          <div class="col-lg-8 col-md-10 comment" style="padding-left:0;">
+            <h4 style="padding-bottom:25px;text-align:left; color:#007bff;"><strong>Comments</strong></h4>
             {% for cmt in post.comments %}
               <ul class="commentList">
                 <li>
                     <div class="commenterImage">
                       <img src="{{cmt.commenter.email | gravatar}}"/>
                     </div>
+
                     <div class="commentText">
-                        <p>{{ cmt.text | safe}}</p>
-                        <span class="date sub-text">{{ cmt.commenter.name }}</span>
+                        <p>{{ cmt.text | safe}}
+                        </p>
+                        <span class="date sub-text" style="font-weight: 500; font-size: 15px;"> {{ cmt.commenter.name }}</span>
+                        {% if current_user.id==1 %}
+                          <span><a href="{{url_for('delete_comment', comment_id = cmt.id)}}" style="padding-left:100px;"> ✘</a></span>
+                        {% endif %}
+
                     </div>
                 </li>
               </ul>

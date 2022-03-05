@@ -32,6 +32,8 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
+copyright_year=date.today().strftime("%Y")
+
 ##CONFIGURE TABLES
 class Users(db.Model, UserMixin):
     __tablename__ = "users"
@@ -83,7 +85,7 @@ def load_user(user_id):
 @app.route('/')
 def get_all_posts():
     posts = BlogPost.query.all()
-    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated)
+    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated , year=copyright_year)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -107,7 +109,7 @@ def register():
         login_user(new_user)
         return redirect(url_for("get_all_posts"))
 
-    return render_template("register.html", form=form, logged_in=current_user.is_authenticated)
+    return render_template("register.html", form=form, logged_in=current_user.is_authenticated , year=copyright_year)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -132,7 +134,7 @@ def login():
             login_user(user)
             return redirect(url_for("get_all_posts"))
 
-    return render_template("login.html", form=form, logged_in=current_user.is_authenticated)
+    return render_template("login.html", form=form, logged_in=current_user.is_authenticated,year=copyright_year)
 
 
 @app.route('/logout')
@@ -160,17 +162,17 @@ def show_post(post_id):
         db.session.commit()
         return redirect(url_for("show_post" ,post_id=post_id))
 
-    return render_template("post.html", post=requested_post, form=form, logged_in=current_user.is_authenticated)
+    return render_template("post.html", post=requested_post, form=form, logged_in=current_user.is_authenticated,year=copyright_year)
 
 
 @app.route("/about")
 def about():
-    return render_template("about.html", logged_in=current_user.is_authenticated)
+    return render_template("about.html", logged_in=current_user.is_authenticated,year=copyright_year)
 
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html", logged_in=current_user.is_authenticated)
+    return render_template("contact.html", logged_in=current_user.is_authenticated,year=copyright_year)
 
 
 @app.route("/new-post",methods=['GET','POST'])
@@ -190,10 +192,10 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form, logged_in=current_user.is_authenticated)
+    return render_template("make-post.html", form=form, logged_in=current_user.is_authenticated,year=copyright_year)
 
 
-@app.route("/edit-post/<int:post_id>")
+@app.route("/edit-post/<int:post_id>" , methods=['GET','POST'])
 @admin
 def edit_post(post_id):
     post = BlogPost.query.get(post_id)
@@ -201,19 +203,17 @@ def edit_post(post_id):
         title=post.title,
         subtitle=post.subtitle,
         img_url=post.img_url,
-        author=post.author,
         body=post.body
     )
     if edit_form.validate_on_submit():
         post.title = edit_form.title.data
         post.subtitle = edit_form.subtitle.data
         post.img_url = edit_form.img_url.data
-        post.author = edit_form.author.data
         post.body = edit_form.body.data
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
 
-    return render_template("make-post.html", form=edit_form)
+    return render_template("make-post.html", form=edit_form ,year=copyright_year)
 
 
 @app.route("/delete/<int:post_id>")
@@ -224,6 +224,15 @@ def delete_post(post_id):
     db.session.commit()
     return redirect(url_for('get_all_posts'))
 
+
+@app.route("/delete_comment/<int:comment_id>")
+@admin
+def delete_comment(comment_id):
+    comment_to_delete = Comment.query.get(comment_id)
+    post_id=comment_to_delete.cmts.id
+    db.session.delete(comment_to_delete)
+    db.session.commit()
+    return redirect (url_for("show_post", post_id=post_id))
 
 if __name__ == "__main__":
     app.run(debug=True)
