@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 # from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, RegisterForm, LoginForm ,CommentForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
 
@@ -32,7 +32,7 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
-copyright_year=date.today().strftime("%Y")
+copyright_year = date.today().strftime("%Y")
 
 ##CONFIGURE TABLES
 class Users(db.Model, UserMixin):
@@ -42,7 +42,7 @@ class Users(db.Model, UserMixin):
     password = db.Column(db.String(250), unique=True, nullable=False)
     name = db.Column(db.String(250), unique=True, nullable=False)
     posts = db.relationship("BlogPost", backref="poster")
-    comments = db.relationship("Comment" , backref="commenter")
+    comments = db.relationship("Comment", backref="commenter")
 
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
@@ -57,10 +57,11 @@ class BlogPost(db.Model):
 
 class Comment(db.Model):
     __tablename__ = "comments"
-    id = db.Column(db.Integer , primary_key=True)
-    text =db.Column(db.Text , nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
     commenter_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id"))
+
 
 db.create_all()
 
@@ -85,7 +86,7 @@ def load_user(user_id):
 @app.route('/')
 def get_all_posts():
     posts = BlogPost.query.all()
-    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated , year=copyright_year)
+    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated, year=copyright_year)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -109,7 +110,7 @@ def register():
         login_user(new_user)
         return redirect(url_for("get_all_posts"))
 
-    return render_template("register.html", form=form, logged_in=current_user.is_authenticated , year=copyright_year)
+    return render_template("register.html", form=form, logged_in=current_user.is_authenticated, year=copyright_year)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -122,7 +123,7 @@ def login():
             form = RegisterForm(
                 email=form.email.data
             )
-            return redirect(url_for("register" , form=form))
+            return redirect(url_for("register", form=form))
         elif not check_password_hash(user.password, form.password.data):
             flash("Invalid password")
             form = LoginForm(
@@ -134,7 +135,7 @@ def login():
             login_user(user)
             return redirect(url_for("get_all_posts"))
 
-    return render_template("login.html", form=form, logged_in=current_user.is_authenticated,year=copyright_year)
+    return render_template("login.html", form=form, logged_in=current_user.is_authenticated, year=copyright_year)
 
 
 @app.route('/logout')
@@ -143,7 +144,7 @@ def logout():
     return redirect(url_for('get_all_posts'))
 
 
-@app.route("/post/<int:post_id>" , methods=['GET','POST'])
+@app.route("/post/<int:post_id>", methods=['GET', 'POST'])
 def show_post(post_id):
     # comments=Comment.query.all()
     requested_post = BlogPost.query.get(post_id)
@@ -153,34 +154,35 @@ def show_post(post_id):
             flash("You need to login or register to comment.")
             return redirect(url_for("login"))
 
-        comment=Comment(
+        comment = Comment(
             text=form.comment.data,
             commenter_id=current_user.id,
             post_id=post_id
         )
         db.session.add(comment)
         db.session.commit()
-        return redirect(url_for("show_post" ,post_id=post_id))
+        return redirect(url_for("show_post", post_id=post_id))
 
-    return render_template("post.html", post=requested_post, form=form, logged_in=current_user.is_authenticated,year=copyright_year)
+    return render_template("post.html", post=requested_post, form=form, logged_in=current_user.is_authenticated,
+                           year=copyright_year)
 
 
 @app.route("/about")
 def about():
-    return render_template("about.html", logged_in=current_user.is_authenticated,year=copyright_year)
+    return render_template("about.html", logged_in=current_user.is_authenticated, year=copyright_year)
 
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html", logged_in=current_user.is_authenticated,year=copyright_year)
+    return render_template("contact.html", logged_in=current_user.is_authenticated, year=copyright_year)
 
 
-@app.route("/new-post",methods=['GET','POST'])
+@app.route("/new-post", methods=['GET', 'POST'])
 @admin
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
-        poster=current_user
+        poster = current_user
         new_post = BlogPost(
             poster_id=poster.id,
             title=form.title.data,
@@ -192,10 +194,10 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form, logged_in=current_user.is_authenticated,year=copyright_year)
+    return render_template("make-post.html", form=form, logged_in=current_user.is_authenticated, year=copyright_year)
 
 
-@app.route("/edit-post/<int:post_id>" , methods=['GET','POST'])
+@app.route("/edit-post/<int:post_id>", methods=['GET', 'POST'])
 @admin
 def edit_post(post_id):
     post = BlogPost.query.get(post_id)
@@ -213,7 +215,7 @@ def edit_post(post_id):
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
 
-    return render_template("make-post.html", form=edit_form ,year=copyright_year)
+    return render_template("make-post.html", form=edit_form, year=copyright_year)
 
 
 @app.route("/delete/<int:post_id>")
@@ -229,10 +231,11 @@ def delete_post(post_id):
 @admin
 def delete_comment(comment_id):
     comment_to_delete = Comment.query.get(comment_id)
-    post_id=comment_to_delete.cmts.id
+    post_id = comment_to_delete.cmts.id
     db.session.delete(comment_to_delete)
     db.session.commit()
-    return redirect (url_for("show_post", post_id=post_id))
+    return redirect(url_for("show_post", post_id=post_id))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
