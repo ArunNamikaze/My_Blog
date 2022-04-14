@@ -26,3 +26,10 @@ class CommentForm(FlaskForm):
     comment=CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Comment")
 
+class ContactForm(FlaskForm):
+    name=StringField("Name",validators=[DataRequired()])
+    email=StringField("Email" ,validators=[DataRequired()])
+    number=StringField("Phone Number", validators=[DataRequired()])
+    message=StringField("Message" , validators=[DataRequired()])
+    submit=SubmitField("Send")
+

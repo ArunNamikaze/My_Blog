@@ -6,10 +6,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 # from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm , ContactForm
 from flask_gravatar import Gravatar
 from functools import wraps
+import smtplib
 
+##FOR SMTPLIB
+EMAIL='arunpython01@gmail.com'
+PASS='Arunpy01'
+
+##FLASK
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 ckeditor = CKEditor(app)
@@ -125,7 +131,7 @@ def login():
             )
             return redirect(url_for("register", form=form))
         elif not check_password_hash(user.password, form.password.data):
-            flash("Invalid password")
+            flash("Incorrect password")
             form = LoginForm(
                 email=form.email.data
             )
@@ -172,9 +178,28 @@ def about():
     return render_template("about.html", logged_in=current_user.is_authenticated, year=copyright_year)
 
 
-@app.route("/contact")
+@app.route("/contact" , methods=['GET', 'POST'])
 def contact():
-    return render_template("contact.html", logged_in=current_user.is_authenticated, year=copyright_year)
+    if current_user.is_authenticated:
+        form = ContactForm(
+            name=current_user.name,
+            email=current_user.email
+        )
+    if not current_user.is_authenticated:
+        form = ContactForm()
+
+    mess_body = f"Name: {form.name.data}\nEmail: {form.email.data}\nMobile: {form.number.data}\n\nMessage:\n{form.message.data}"
+    if form.validate_on_submit():
+        if not current_user.is_authenticated:
+            flash("You need to login or register to contact.")
+            return redirect(url_for("login"))
+
+        with smtplib.SMTP("smtp.gmail.com") as con:
+            con.starttls()
+            con.login(user=EMAIL , password=PASS)
+            con.sendmail(from_addr=EMAIL, to_addrs=EMAIL ,msg=f"Subject:Response form the blog\n\n{mess_body}")
+
+    return render_template("contact.html", form=form ,logged_in=current_user.is_authenticated, year=copyright_year)
 
 
 @app.route("/new-post", methods=['GET', 'POST'])
@@ -215,7 +240,7 @@ def edit_post(post_id):
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
 
-    return render_template("make-post.html", form=edit_form, year=copyright_year)
+    return render_template("make-post.html", form=edit_form, year=copyright_year , is_edit=True)
 
 
 @app.route("/delete/<int:post_id>")

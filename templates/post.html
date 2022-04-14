@@ -40,9 +40,9 @@
 
           {% endif %}
 <!--           Comments Area -->
+          {% for cmt in post.comments %}
           <div class="col-lg-8 col-md-10 comment" style="padding-left:0;">
             <h4 style="padding-bottom:25px;text-align:left; color:#007bff;"><strong>Comments</strong></h4>
-            {% for cmt in post.comments %}
               <ul class="commentList">
                 <li>
                     <div class="commenterImage">
