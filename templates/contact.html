@@ -1,7 +1,5 @@
-{% extends 'bootstrap/base.html' %}
-{% import "bootstrap/wtf.html" as wtf %}
-{% block content %}
 {% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
   <header class="masthead" style="background-image: url('{{ url_for('static', filename='img/contact-bg.jpg')}}')">
     <div class="overlay"></div>
@@ -67,7 +65,7 @@
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
         <p style="text=align:center;">Want to get in touch? Fill out the form below to send me a message and I will get back to you as soon as possible!</p>
-        {% with messages = get_flashed_messages() %}
+        <strong>{% with messages = get_flashed_messages() %}
           {% if messages %}
             {% for message in messages %}
                <p style="color:red">{{ message }}</p>
@@ -75,11 +73,11 @@
           {% endif %}
         {% endwith %}
        {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
-
+      </strong>
       </div>
     </div>
 </div>
 {% include "footer.html" %}
-{% endblock %}
+
 
 

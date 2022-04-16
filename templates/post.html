@@ -33,12 +33,6 @@
 
             {% endif %}
 
-          {% if not current_user.id==1 %}
-
-             {{ ckeditor.load() }}
-             {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
-
-          {% endif %}
 <!--           Comments Area -->
           {% for cmt in post.comments %}
           <div class="col-lg-8 col-md-10 comment" style="padding-left:0;">
@@ -49,7 +43,7 @@
                       <img src="{{cmt.commenter.email | gravatar}}"/>
                     </div>
 
-                    <div class="commentText">
+                    <div class="commentText" style="padding-bottom:75px;">
                         <p>{{ cmt.text | safe}}
                         </p>
                         <span class="date sub-text" style="font-weight: 500; font-size: 15px;"> {{ cmt.commenter.name }}</span>
@@ -63,7 +57,11 @@
             {% endfor %}
 
             </div>
+            {% if not current_user.id==1 %}
+             {{ ckeditor.load() }}
+             {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
 
+          {% endif %}
 
           </div>
       </div>

@@ -23,7 +23,7 @@ class LoginForm(FlaskForm):
     submit =SubmitField("Log IN")
 
 class CommentForm(FlaskForm):
-    comment=CKEditorField("Comment", validators=[DataRequired()])
+    comment=CKEditorField("Post your comments", validators=[DataRequired()])
     submit = SubmitField("Comment")
 
 class ContactForm(FlaskForm):
